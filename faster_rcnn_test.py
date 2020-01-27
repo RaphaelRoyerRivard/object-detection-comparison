@@ -4,6 +4,7 @@ from PIL import Image
 import torchvision.transforms as T
 import cv2
 from matplotlib import pyplot as plt
+from os import walk
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -44,20 +45,48 @@ def get_prediction(img_path, threshold):
     return pred_boxes, pred_class
 
 
-def object_detection_api(img_path, threshold=0.5, rect_th=3, text_size=3, text_th=3):
-    boxes, pred_cls = get_prediction(img_path, threshold)  # Get predictions
-    img = cv2.imread(img_path)  # Read image with cv2
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
-    for i in range(len(boxes)):
-        cv2.rectangle(img, boxes[i][0], boxes[i][1], color=(0, 255, 0),
-                      thickness=rect_th)  # Draw Rectangle with the coordinates
-        cv2.putText(img, pred_cls[i], boxes[i][0], cv2.FONT_HERSHEY_SIMPLEX, text_size, (0, 255, 0),
-                    thickness=text_th)  # Write the prediction class
-    plt.figure(figsize=(20, 30))  # display the output image
-    plt.imshow(img)
-    plt.xticks([])
-    plt.yticks([])
-    plt.show()
+def object_detection_api(images_root_path, threshold=0.5, save_result=True, show_plot=False, rect_th=3, text_size=0.5, text_th=1):
+    for path, subfolders, files in walk(images_root_path):
+        detected_classes = []
+        detection_lines = ""
+        for file in files:
+            if not file.endswith(".png") and not file.endswith(".jpg"):
+                continue
+            img_path = path + "/" + file
+            boxes, pred_cls = get_prediction(img_path, threshold)  # Get predictions
+            if show_plot:
+                img = cv2.imread(img_path)  # Read image with cv2
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
+                for i in range(len(boxes)):
+                    cv2.rectangle(img, boxes[i][0], boxes[i][1], color=(0, 255, 0),
+                                  thickness=rect_th)  # Draw Rectangle with the coordinates
+                    text_pos = (int(boxes[i][0][0] + 5), int(boxes[i][0][1] + 20))
+                    cv2.putText(img, pred_cls[i], text_pos, cv2.FONT_HERSHEY_SIMPLEX, text_size, (0, 255, 0),
+                                thickness=text_th)  # Write the prediction class
+                plt.figure(figsize=(20, 30))  # display the output image
+                plt.imshow(img)
+                plt.xticks([])
+                plt.yticks([])
+                plt.show()
+            if save_result:
+                print(file)
+                line = file
+                for i in range(len(boxes)):
+                    box = boxes[i]
+                    line += " " + pred_cls[i]
+                    if pred_cls[i] not in detected_classes:
+                        detected_classes.append(pred_cls[i])
+                    for point in box:
+                        for coordinate in point:
+                            line += " " + str(coordinate)
+                detection_lines += line + "\n"
+        filename = path.split("/")[-1]
+        outfile = open(filename + ".detection.txt", "a")
+        for detected_class in detected_classes:
+            outfile.write(detected_class + ";")
+        outfile.write("\n")
+        outfile.write(detection_lines)
+        outfile.close()
 
 
-object_detection_api('./people.jpg', threshold=0.8)
+object_detection_api('../images/PETS2006', threshold=0.8, save_result=True, show_plot=False)
