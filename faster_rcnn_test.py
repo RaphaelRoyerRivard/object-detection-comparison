@@ -39,7 +39,10 @@ def get_prediction(img_path, threshold):
     pred_class = [COCO_INSTANCE_CATEGORY_NAMES[i] for i in list(pred[0]['labels'].detach().cpu().clone().numpy())]  # Get the Prediction Score
     pred_boxes = [[(i[0], i[1]), (i[2], i[3])] for i in list(pred[0]['boxes'].detach().cpu().clone().numpy())]  # Bounding boxes
     pred_score = list(pred[0]['scores'].detach().cpu().clone().numpy())
-    pred_t = [pred_score.index(x) for x in pred_score if x > threshold][-1]  # Get list of index with score greater than threshold.
+    valid_pred_indexes = [pred_score.index(x) for x in pred_score if x > threshold]
+    if len(valid_pred_indexes) == 0:
+        return [], []
+    pred_t = valid_pred_indexes[-1]  # Get list of index with score greater than threshold.
     pred_boxes = pred_boxes[:pred_t+1]
     pred_class = pred_class[:pred_t+1]
     return pred_boxes, pred_class
@@ -49,6 +52,10 @@ def object_detection_api(images_root_path, threshold=0.5, save_result=True, show
     for path, subfolders, files in walk(images_root_path):
         detected_classes = []
         detection_lines = ""
+        print(path)
+        filename = path.split("\\")[-1]
+        if filename.startswith("_"):
+            continue
         for file in files:
             if not file.endswith(".png") and not file.endswith(".jpg"):
                 continue
@@ -80,13 +87,14 @@ def object_detection_api(images_root_path, threshold=0.5, save_result=True, show
                         for coordinate in point:
                             line += " " + str(coordinate)
                 detection_lines += line + "\n"
-        filename = path.split("/")[-1]
-        outfile = open(filename + ".detection.txt", "a")
-        for detected_class in detected_classes:
-            outfile.write(detected_class + ";")
-        outfile.write("\n")
-        outfile.write(detection_lines)
-        outfile.close()
+
+        if len(detected_classes) > 0:
+            outfile = open(filename + ".detection.txt", "a")
+            for detected_class in detected_classes:
+                outfile.write(detected_class + ";")
+            outfile.write("\n")
+            outfile.write(detection_lines)
+            outfile.close()
 
 
-object_detection_api('../images/PETS2006', threshold=0.8, save_result=True, show_plot=False)
+object_detection_api('../images', threshold=0.8, save_result=True, show_plot=False)
