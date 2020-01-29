@@ -53,7 +53,7 @@ def object_detection_api(images_root_path, threshold=0.5, save_result=True, show
         detected_classes = []
         detection_lines = ""
         print(path)
-        filename = path.split("\\")[-1]
+        filename = path.split("\\")[-1].split("/")[-1]
         if filename.startswith("_"):
             continue
         for file in files:
