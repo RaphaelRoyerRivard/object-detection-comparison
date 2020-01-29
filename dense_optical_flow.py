@@ -49,7 +49,12 @@ def run_optical_flow_in_folder(images_root_path, save=False, show=True, dataset_
             gray[movement_idx] = 255
             gray[stale_idx] = 0
             if show:
-                cv2.imshow("Dense Optical Flow", gray)
+                color_image = cv2.imread(img_path)
+                combined = cv2.addWeighted(color_image, 1, bgr, 1, 0)
+                # gray_3_channels = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+                # combined = cv2.addWeighted(color_image, 1, gray_3_channels, 0.5, 0)
+                cv2.imshow("Dense Optical Flow", combined)
+                # cv2.imshow("Dense Optical Flow", gray)
 
             key = cv2.waitKey(1) & 0xff
             if key == 27:  # ESC
@@ -78,4 +83,4 @@ dataset_thresholds = {
     "turbulence2": 1.5,
 }
 
-run_optical_flow_in_folder("../images", save=True, show=True, dataset_magnitude_thresholds=dataset_thresholds)
+run_optical_flow_in_folder("../images/turbulence0", save=False, show=True, dataset_magnitude_thresholds=dataset_thresholds)
