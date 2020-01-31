@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 
-def run_optical_flow_in_folder(images_root_path, save=False, show=True, dataset_magnitude_thresholds=None):
+def run_optical_flow_in_folder(images_root_path, save=False, show=True, show_binary=False, smaller_window=False, dataset_magnitude_thresholds=None):
     for path, subfolders, files in os.walk(images_root_path):
         frame1 = None
         hsv = None
@@ -15,7 +15,7 @@ def run_optical_flow_in_folder(images_root_path, save=False, show=True, dataset_
             magnitude_threshold = dataset_magnitude_thresholds[folder_name]
         else:
             magnitude_threshold = 0
-        folder_name = "optical_flow_results_" + folder_name
+        folder_name = "optical_flow_results_" + ("small_window_" if smaller_window else "") + folder_name
         for file in files:
             if not file.endswith(".png") and not file.endswith(".jpg"):
                 continue
@@ -30,7 +30,8 @@ def run_optical_flow_in_folder(images_root_path, save=False, show=True, dataset_
 
             frame2 = cv2.imread(img_path, 0)
 
-            flow = cv2.calcOpticalFlowFarneback(frame1, frame2, flow=None, pyr_scale=0.5, levels=3, winsize=35,
+            window_size = 15 if smaller_window else 35
+            flow = cv2.calcOpticalFlowFarneback(frame1, frame2, flow=None, pyr_scale=0.5, levels=3, winsize=window_size,
                                                 iterations=3, poly_n=7, poly_sigma=1.5, flags=0)
 
             mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
@@ -50,9 +51,11 @@ def run_optical_flow_in_folder(images_root_path, save=False, show=True, dataset_
             gray[stale_idx] = 0
             if show:
                 color_image = cv2.imread(img_path)
-                combined = cv2.addWeighted(color_image, 1, bgr, 1, 0)
-                # gray_3_channels = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-                # combined = cv2.addWeighted(color_image, 1, gray_3_channels, 0.5, 0)
+                if show_binary:
+                    gray_3_channels = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+                    combined = cv2.addWeighted(color_image, 1, gray_3_channels, 0.5, 0)
+                else:
+                    combined = cv2.addWeighted(color_image, 1, bgr, 1, 0)
                 cv2.imshow("Dense Optical Flow", combined)
                 # cv2.imshow("Dense Optical Flow", gray)
 
@@ -74,7 +77,7 @@ dataset_thresholds = {
     "canoe": 2.25,
     "fall": 2.5,
     "fountain02": 2,
-    "highway": 1,
+    "highway": 0.75,
     "office": 1,
     "pedestrians": 1,
     "PETS2006": 1.5,
@@ -83,4 +86,4 @@ dataset_thresholds = {
     "turbulence2": 1.5,
 }
 
-run_optical_flow_in_folder("../images/turbulence0", save=False, show=True, dataset_magnitude_thresholds=dataset_thresholds)
+run_optical_flow_in_folder("../images", save=True, show=True, show_binary=True, smaller_window=True, dataset_magnitude_thresholds=dataset_thresholds)
