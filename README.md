@@ -9,6 +9,8 @@ For `faster_rcnn_test.py` and `dense_optical_flow.py` to work, your directory tr
 			- dataset2
 			- etc.
 
+To choose to either visualize or save the results of both methods, change the values of the `save` and `show` parameters at the end of the `faster_rcnn_test.py` and `dense_optical_flow.py` files.
+
 Result files in `Analyse` have the following information :
 
 - Precision
