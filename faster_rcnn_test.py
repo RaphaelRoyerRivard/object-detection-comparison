@@ -59,9 +59,10 @@ def object_detection_api(images_root_path, threshold=0.5, save_result=True, show
         for file in files:
             if not file.endswith(".png") and not file.endswith(".jpg"):
                 continue
+            print(file)
             img_path = path + "/" + file
             boxes, pred_cls = get_prediction(img_path, threshold)  # Get predictions
-            if show_plot:
+            if show_plot and len(boxes) > 0:
                 img = cv2.imread(img_path)  # Read image with cv2
                 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
                 for i in range(len(boxes)):
@@ -97,4 +98,4 @@ def object_detection_api(images_root_path, threshold=0.5, save_result=True, show
             outfile.close()
 
 
-object_detection_api('../images', threshold=0.8, save_result=True, show_plot=False)
+object_detection_api('../images/fall', threshold=0.8, save_result=False, show_plot=True)
