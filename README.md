@@ -1,4 +1,4 @@
-# faster-rcnn-test
+# object-detection-comparison
 
 For `faster_rcnn_test.py` and `dense_optical_flow.py` to work, your directory tree should look like that :
 
