@@ -14,7 +14,6 @@ for path, subfolders, files in os.walk("Analyse/Analyse_total_de_la_sequence_vid
         line = result_file.readline().lstrip()
         print(file, line)
         values = [float(value) for value in line.split(" ")]
-        print(values)
         if file not in results:
             results[file] = {}
         results[file][folder_name] = values
@@ -36,9 +35,7 @@ for i, key in enumerate(list(results.keys())):
                 break
 
 labels = [dataset.split(".")[0].split("result_")[-1] for dataset in list(results.keys())]
-print("labels", labels)
 values_classification = [values['Efficacite_classification'] for values in list(results.values())]
-print("values_classification", values_classification)
 values_classification_filtered = [values['Efficacite_classification_filtre'] for values in list(results.values())]
 values_flow_noisy = [values['Efficacite_flow_avec_du_bruit'] for values in list(results.values())]
 values_flow_blurry = [values['Efficacite_flow_pas_de bruit'] for values in list(results.values())]
