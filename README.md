@@ -16,3 +16,4 @@ Result files in `Analyse` have the following information :
 - Precision
 - Recall
 	
+To generate the graphs shown in the lab report, run the `performance_analysis.py` script.
